@@ -278,6 +278,76 @@ router.patch('/updateclient/:id', async (req, res) => {
       res.status(500).send("Internal Server Error");
   }
   })
+ //ROUTE 10: Delete client
+ router.delete('/deleteclient/:id',async (req, res) => {
+  try{
+  //find the note to be delete and delete it
+  let client = await Client.findById(req.params.id);
+  if(!client){
+    res.status(404).send("Not Found")}
+  //  //Allow detection only if own user owns this note
+  // if(note.user.toString() !== req.user.id){
+  //     return res.status(401).send("Not Allowed");
+  // }
+  
+ client = await Client.findByIdAndDelete(req.params.id)
+  res.json({"Success" : "client has been deleted"});
+}
+catch(error){
+  console.log(error.message);
+      res.status(500).send("Internal server error");
+  }
+})
+
+ //ROUTE 10: Delete product
+ router.delete('/deleteproduct/:id',async (req, res) => {
+  try{
+  //find the note to be delete and delete it
+  let product = await Product.findById(req.params.id);
+  if(!product){
+    res.status(404).send("Not Found")}
+  //  //Allow detection only if own user owns this note
+  // if(note.user.toString() !== req.user.id){
+  //     return res.status(401).send("Not Allowed");
+  // }
+  
+product = await Product.findByIdAndDelete(req.params.id)
+  res.json({"Success" : "product has been deleted"});
+}
+catch(error){
+  console.log(error.message);
+      res.status(500).send("Internal server error");
+  }
+})
+
+//ROUTE 11: Update User details
+router.patch('/updateuser/:id', async(req ,res)=>{
+  const {name, email,password } = req.body;
+  try {
+      // Create a newNote object
+      const newUser = {};
+
+        newUser.name= name;
+        newUser.email= email;
+        newUser.password= password;
+
+      // Find the note to be updated and update it
+      let user = await User.findById({_id:req.params.id});
+      if (!user) {
+        return res.status(404).send("Not Found");
+      }
+
+      // if (note.user.toString() !== req.user.id) {
+      //     return res.status(401).send("Not Allowed");
+      // }
+    user = await User.findByIdAndUpdate(req.params.id, { $set: newUser }, { new: true });
+    res.json(user);
+}
+  catch (error) {
+        console.error(error.message);
+        res.status(500).send("Internal Server Error");
+    }
+})
 
  
 
