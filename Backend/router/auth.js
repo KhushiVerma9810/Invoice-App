@@ -1,8 +1,10 @@
 const express = require("express");
 const router = new express.Router();
 const User = require('../Models/user');
-const Client = require("../Models/client")
+const Client = require("../Models/Client")
+const Product = require("../Models/product")
 const  { body, validationResult } = require("express-validator");
+const invoiceInf = require("../Models/invoiceInf");
 
 
 // registeration of user
@@ -75,7 +77,7 @@ console.log(user);
 
 //ROUTE 3 : Add Client
 router.post("/createclient" , [
-  body('name' , 'Enter a valid name').isLength({ min: 3 }),
+  body('name', 'Enter a valid name').isLength({ min: 3 }),
   body('email' , 'Enter a valid email').isEmail(),
   body('address' , 'address must be atleast 10 characters').isLength({ min: 5 }),
   body('phoneNo' , 'Phone No must be 10 digits').isLength({ min: 5 }),
@@ -124,5 +126,159 @@ catch (error){
     res.status(500).send("Internal server error");
 }
 })
+
+//ROUTE 5 :Invoice creation
+router.post("/addinvoice" , [
+body('name' , 'Enter a valid name').isLength({ min: 3 }),
+body('invoicedate')
+  .notEmpty().withMessage('Date is required')
+  .isDate().withMessage('Invalid date format')
+  .custom((value) => {
+    const currentDate = new Date();
+    const inputDate = new Date(value);
+    if (inputDate === currentDate) {
+      throw new Error('please write present date');
+    }
+    return true;
+  }),
+  body('duedate')
+  .notEmpty().withMessage('Date is required')
+  .isDate().withMessage('Invalid date format')
+  .custom((value) => {
+    const currentDate = new Date();
+    const inputDate = new Date(value);
+    if (inputDate < currentDate) {
+      throw new Error('Date must be in the future');
+    }
+    return true;
+  })
+],async (req, res) => {
+  try {
+    let success = false;
+    //if there are errors return bad request and the errors
+    const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success ,errors: errors.array() });
+      }
+    let product = await Product.findOne({});
+    let client = await Client.findOne({});
+      let invoice = await invoiceInf.create({
+        clientData :client,
+        invoiceDate : req.body.invoicedate,
+        dueDate : req.body.duedate,
+        productDetails:product
+       });
+       success = true;
+       res.send(invoice);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).send("Internal server error");
+  }
+})
+
+
+//ROUTE 6 :Add product
+router.post('/addproduct' , [
+  body('name', 'Enter a product name').isLength({ min: 3 }),
+  body('price' , 'Enter a price'),
+],async(req , res)=>{
+  let success = false;
+  const error = validationResult(req);
+
+  if (!error.isEmpty()) {
+    return res.status(400).json({ success ,errors: error.array() });
+  }
+  // check whether the user with email exist
+  try{
+  let product = await Product.findOne({name:req.body.name});
+  if(product){
+    return res.status(400).send("that product already exists");
+  }
+  else{
+   //create a new user
+   product= await Product.create({
+     name: req.body.name,
+     price: req.body.price
+})
+success = true;
+console.log(product);
+await product.save();
+res.send(product);
+  }
+}catch(error){
+  console.log(error.message);
+  res.status(500).send("Internal server error");
+}
+})
+
+//ROUTER 7 : Get Product details
+
+router.get('/getproduct' , async(req , res)=>{
+  try {
+
+    const products = await Product.find({});
+    res.json(products)
+}
+catch (error){
+    console.log(error.message);
+    res.status(500).send("Internal server error");
+}
+})
+
+//ROUTE 8: Update Client information
+router.patch('/updateclient/:id', async (req, res) => {
+  const {client_name, email,address , phone_no } = req.body;
+  try {
+      // Create a newNote object
+      const newClient = {};
+
+      if (client_name) {
+        newClient.client_name = client_name;
+      }
+        newClient.email = email;
+        newClient.address = address;
+        newClient.phone_no = phone_no;
+
+      // Find the note to be updated and update it
+      let client = await Client.findById(req.params.id);
+      if (!client) {
+        return res.status(404).send("Not Found");
+      }
+
+      // if (note.user.toString() !== req.user.id) {
+      //     return res.status(401).send("Not Allowed");
+      // }
+    client = await Client.findByIdAndUpdate(req.params.id, { $set: newClient }, { new: true });
+    res.json(client);
+}
+  catch (error) {
+        console.error(error.message);
+        res.status(500).send("Internal Server Error");
+    }
+  })
+
+  //ROUTE 9: Update Product details
+  router.patch("/updateproduct/:id" , async(req , res)=>{
+  
+    const {name , price} = req.body;
+    // Create a newProduct object
+    try{
+    const newProduct = {};
+   newProduct.name = name;
+    newProduct.price = price ;
+      // Find the note to be updated and update it
+      let product = await Product.findById(req.params.id);
+      if (!product) { 
+        return res.status(404).send("Not Found") 
+      }
+     product = await Product.findByIdAndUpdate(req.params.id, { $set: newProduct }, { new: true })
+      res.json({ product });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error");
+  }
+  })
+
+ 
 
 module.exports = router;
