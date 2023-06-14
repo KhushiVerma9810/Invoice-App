@@ -5,6 +5,9 @@ const Client = require("../Models/Client")
 const Product = require("../Models/product")
 const  { body, validationResult } = require("express-validator");
 const invoiceInf = require("../Models/invoiceInf");
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = 'khushikainvoiceapp';
+const fetchuser = require("../Middleware/fetchuser");
 
 
 // registeration of user
@@ -31,17 +34,26 @@ router.post('/user/signup' ,[
      name: req.body.name,
      email: req.body.email,
       password: req.body.password
-})
+});
+//authentication creation
+const data={
+  user:{
+    id:user.id
+  }
+}
+const authToken= jwt.sign(data , JWT_SECRET);
+
 success = true;
-console.log(user);
-await user.save();
-res.send(user);
+console.log("auth-token");
+res.send({success ,authToken})
   }
 }catch(error){
   console.log(error.message);
   res.status(500).send("Internal server error");
 }
 });
+
+
 
 //ROUTE 2: login user
 router.post("/user/login" , [
@@ -64,7 +76,14 @@ try{
     success = false;
     return res.status(400).json({success, error:"Please try to login with correct credentials"})
   }
-  success = true;
+  const data={
+    user:{
+      id: user.id
+    }
+  }
+  const authToken= jwt.sign(data , JWT_SECRET);
+   success = true;
+  res.json({success , authToken})
 console.log(user);
 }
   catch(error){
@@ -128,7 +147,7 @@ catch (error){
 })
 
 //ROUTE 5 :Invoice creation
-router.post("/addinvoice" , [
+router.post("/addinvoice" ,fetchuser, [
 body('name' , 'Enter a valid name').isLength({ min: 3 }),
 body('invoicedate')
   .notEmpty().withMessage('Date is required')
@@ -178,7 +197,7 @@ body('invoicedate')
 
 
 //ROUTE 6 :Add product
-router.post('/addproduct' , [
+router.post('/addproduct',fetchuser , [
   body('name', 'Enter a product name').isLength({ min: 3 }),
   body('price' , 'Enter a price'),
 ],async(req , res)=>{
@@ -188,14 +207,14 @@ router.post('/addproduct' , [
   if (!error.isEmpty()) {
     return res.status(400).json({ success ,errors: error.array() });
   }
-  // check whether the user with email exist
   try{
+    //check if product already exists
   let product = await Product.findOne({name:req.body.name});
   if(product){
     return res.status(400).send("that product already exists");
   }
   else{
-   //create a new user
+   //create a new product
    product= await Product.create({
      name: req.body.name,
      price: req.body.price
@@ -212,8 +231,7 @@ res.send(product);
 })
 
 //ROUTER 7 : Get Product details
-
-router.get('/getproduct' , async(req , res)=>{
+router.get('/getproduct' , fetchuser,async(req , res)=>{
   try {
 
     const products = await Product.find({});
@@ -226,7 +244,7 @@ catch (error){
 })
 
 //ROUTE 8: Update Client information
-router.patch('/updateclient/:id', async (req, res) => {
+router.patch('/updateclient/:id', fetchuser,async (req, res) => {
   const {client_name, email,address , phone_no } = req.body;
   try {
       // Create a newNote object
@@ -245,9 +263,9 @@ router.patch('/updateclient/:id', async (req, res) => {
         return res.status(404).send("Not Found");
       }
 
-      // if (note.user.toString() !== req.user.id) {
-      //     return res.status(401).send("Not Allowed");
-      // }
+      if (client.user.toString() !== req.user.id) {
+          return res.status(401).send("Not Allowed");
+      }
     client = await Client.findByIdAndUpdate(req.params.id, { $set: newClient }, { new: true });
     res.json(client);
 }
@@ -258,7 +276,7 @@ router.patch('/updateclient/:id', async (req, res) => {
   })
 
   //ROUTE 9: Update Product details
-  router.patch("/updateproduct/:id" , async(req , res)=>{
+  router.patch("/updateproduct/:id" ,fetchuser, async(req , res)=>{
   
     const {name , price} = req.body;
     // Create a newProduct object
@@ -266,11 +284,15 @@ router.patch('/updateclient/:id', async (req, res) => {
     const newProduct = {};
    newProduct.name = name;
     newProduct.price = price ;
-      // Find the note to be updated and update it
+      // Find the product to be updated and update it
       let product = await Product.findById(req.params.id);
       if (!product) { 
         return res.status(404).send("Not Found") 
       }
+      if (product.user.toString() !== req.user.id) {
+        return res.status(401).send("Not Allowed");
+    }
+
      product = await Product.findByIdAndUpdate(req.params.id, { $set: newProduct }, { new: true })
       res.json({ product });
     } catch (error) {
@@ -279,16 +301,16 @@ router.patch('/updateclient/:id', async (req, res) => {
   }
   })
  //ROUTE 10: Delete client
- router.delete('/deleteclient/:id',async (req, res) => {
+ router.delete('/deleteclient/:id', fetchuser,async (req, res) => {
   try{
-  //find the note to be delete and delete it
+  //find the client to be delete and delete it
   let client = await Client.findById(req.params.id);
   if(!client){
     res.status(404).send("Not Found")}
-  //  //Allow detection only if own user owns this note
-  // if(note.user.toString() !== req.user.id){
-  //     return res.status(401).send("Not Allowed");
-  // }
+   //Allow detection only if own user owns this client
+  if(client.user.toString() !== req.user.id){
+      return res.status(401).send("Not Allowed");
+  }
   
  client = await Client.findByIdAndDelete(req.params.id)
   res.json({"Success" : "client has been deleted"});
@@ -300,16 +322,16 @@ catch(error){
 })
 
  //ROUTE 10: Delete product
- router.delete('/deleteproduct/:id',async (req, res) => {
+ router.delete('/deleteproduct/:id', fetchuser,async (req, res) => {
   try{
   //find the note to be delete and delete it
   let product = await Product.findById(req.params.id);
   if(!product){
     res.status(404).send("Not Found")}
-  //  //Allow detection only if own user owns this note
-  // if(note.user.toString() !== req.user.id){
-  //     return res.status(401).send("Not Allowed");
-  // }
+   //Allow detection only if own user owns this product
+  if(product.user.toString() !== req.user.id){
+      return res.status(401).send("Not Allowed");
+  }
   
 product = await Product.findByIdAndDelete(req.params.id)
   res.json({"Success" : "product has been deleted"});
@@ -321,7 +343,7 @@ catch(error){
 })
 
 //ROUTE 11: Update User details
-router.patch('/updateuser/:id', async(req ,res)=>{
+router.patch('/updateuser/:id',fetchuser, async(req ,res)=>{
   const {name, email,password } = req.body;
   try {
       // Create a newNote object
@@ -337,9 +359,9 @@ router.patch('/updateuser/:id', async(req ,res)=>{
         return res.status(404).send("Not Found");
       }
 
-      // if (note.user.toString() !== req.user.id) {
-      //     return res.status(401).send("Not Allowed");
-      // }
+      if (client.user.toString() !== req.user.id) {
+          return res.status(401).send("Not Allowed");
+      }
     user = await User.findByIdAndUpdate(req.params.id, { $set: newUser }, { new: true });
     res.json(user);
 }
