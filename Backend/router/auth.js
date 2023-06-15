@@ -8,6 +8,7 @@ const invoiceInf = require("../Models/invoiceInf");
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'khushikainvoiceapp';
 const fetchuser = require("../Middleware/fetchuser");
+const bcrypt = require("bcryptjs");
 
 
 // registeration of user
@@ -28,12 +29,14 @@ router.post('/user/signup' ,[
   if(user){
     return res.status(400).send("that user already exists");
   }
-  else{
+  //hash password using bcrypt
+const salt = await bcrypt.genSalt(10);
+const  secPass = await bcrypt.hash(req.body.password , salt);
    //create a new user
    user = await User.create({
      name: req.body.name,
      email: req.body.email,
-      password: req.body.password
+      password: secPass
 });
 //authentication creation
 const data={
@@ -46,7 +49,6 @@ const authToken= jwt.sign(data , JWT_SECRET);
 success = true;
 console.log("auth-token");
 res.send({success ,authToken})
-  }
 }catch(error){
   console.log(error.message);
   res.status(500).send("Internal server error");
@@ -72,10 +74,12 @@ try{
   if(!user){
     return res.status(400).json({error:"Please try to login with correct credentials"});
   }
-  if(password != user.password){
+  const passwordCompare = await bcrypt.compare(password , user.password);
+  if(!passwordCompare){
     success = false;
-    return res.status(400).json({success, error:"Please try to login with correct credentials"})
+    return res.status(400).json({success , error:"Please try to login with correct credentials"});
   }
+
   const data={
     user:{
       id: user.id
