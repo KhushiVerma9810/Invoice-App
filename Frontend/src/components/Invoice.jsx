@@ -117,9 +117,12 @@ const Invoice = () => {
               </div>
             </div>
             </div>
-            <div className="flex flex-wrap justify-between mb-8">
+            <div className="flex items-center flex-wrap justify-between mb-8">
               <div className="w-full md:w-1/3 mb-2 md:mb-0">
-                <label className="block mb-1 text-gray-800 font-bold text-sm uppercase tracking-wide">Billing Address</label>
+                <div className='flex items-center' >
+                <label className="block mb-1 text-gray-800 font-bold text-sm uppercase tracking-wide mr-3">Billing Address</label>
+                <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">existing add.</button>
+                </div>
                 <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" id="inline-full-name" placeholder="Billing company name" x-model="billing.name" value={billing.address} onChange={(e) => setBilling({ ...billing, address: e.target.value })} />
               <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
@@ -130,7 +133,11 @@ const Invoice = () => {
                         id="inline-full-name" type="text" placeholder="Additional info" x-model="billing.extra"/>
                         </div>
               <div className="w-full md:w-1/3">
-                <label className="text-gray-800 block mb-1 font-bold text-sm uppercase tracking-wide">Shipping Address  To:</label>
+              <div className='flex items-center' >
+                <label className="text-gray-800 block mb-1 font-bold text-sm uppercase tracking-wide mr-3">Shipping Address  To:</label>
+                <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+                <i className="bi bi-person-add mr-1"></i>existing</button>
+                </div>
                 <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 rounded-lg p-2 mt-1" value={from.address} onChange={(e) => setFrom({ ...from, address: e.target.value })}  id="inline-full-name" placeholder="Your company name" x-model="from.name"/>
                 <input
                         className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"

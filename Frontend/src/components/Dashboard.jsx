@@ -84,6 +84,7 @@ const Dashboard = () => {
             </div>
             <p class="text-sm text-center text-gray-600">v2.0.0.3 | &copy; 2022 Pantazi Soft</p>
         </div> */}
+
         <div id="content" class="bg-black/10 col-span-9 rounded-lg p-6">
             <div id="24h">
                 <h1 class="font-bold py-4 uppercase">Last 24h Statistics</h1>
@@ -419,8 +420,7 @@ const Dashboard = () => {
                     </table>
                 </div>
             </div>
-           
-        </div>
+           </div>
     </>
   )
 }

@@ -6,20 +6,29 @@ import {BrowserRouter,
 import Invoice from './components/Invoice';
 import Dashboard from './components/Dashboard';
 import Maindash from './components/Maindash';
+import Signup from './components/Signup';
+import Login from './components/Login' 
+import Navbar from './components/Navbar';
+
 
 const App = () => {
   return (
     <>
  <BrowserRouter>
  <div>
-   <div className=" w-1/4 h-screen overflow-hidden flex fixed">
+{/*  
+ <div class="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased bg-white dark:bg-gray-700 text-black dark:text-white"> */}
+ <div className="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased bg-white dark:bg-gray-700 text-black dark:text-white h-screen ">
        <Maindash/>
-        </div>
-        <div className=" w-3/4 ml-auto p-8 flex-1 p-10 text-2xl font-bold h-screen overflow-x-auto">
+        {/* <div className="w-full md:w-3/4 p-8 overflow-y-auto ml-0 md:ml-64 mt-14 mb-10 h-full "> */}
+        <div className="h-full overflow-y-auto ml-14 mt-14 mb-10 md:ml-64">
  <Routes>
  <Route path="/invoice" element={<Invoice/>}/>
  <Route path="/dashboard" element={<Dashboard/>}/>
+ <Route path="/signup" element={<Signup/>}/>
+ <Route path="/login" element={<Login/>}/>
  </Routes>
+ </div>
  </div>
  </div>
  </BrowserRouter>

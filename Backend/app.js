@@ -4,14 +4,19 @@ const connectToMongo = require("./DB/conn");
 const userRouter = require("../Backend/router/auth");
 const hbs = require("hbs");
 const path= require("path");
+var cors = require('cors')
+
 
 connectToMongo();
 const app = express();
 const port = 5000;
+
 const templatePath = path.join(__dirname,"/templates/views");
 const partialPath = path.join(__dirname,"/templates/partials");
+app.use(cors())
 app.use(express.json());
 app.use(userRouter);
+
 app.set("view engine" , "hbs");
 app.set("views",templatePath);
 hbs.registerPartials(partialPath);
