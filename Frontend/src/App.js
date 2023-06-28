@@ -16,11 +16,8 @@ const App = () => {
     <>
  <BrowserRouter>
  <div>
-{/*  
- <div class="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased bg-white dark:bg-gray-700 text-black dark:text-white"> */}
  <div className="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased bg-white dark:bg-gray-700 text-black dark:text-white h-screen ">
        <Maindash/>
-        {/* <div className="w-full md:w-3/4 p-8 overflow-y-auto ml-0 md:ml-64 mt-14 mb-10 h-full "> */}
         <div className="h-full overflow-y-auto ml-14 mt-14 mb-10 md:ml-64">
  <Routes>
  <Route path="/invoice" element={<Invoice/>}/>
