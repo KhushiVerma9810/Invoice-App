@@ -76,7 +76,7 @@ const Table = () => {
                 />
               </td>
               <td>
-                <input  
+                <input
                   value={row.email}
                   onChange={(e) =>
                     handleInputChange(index, 'qty', e.target.value)

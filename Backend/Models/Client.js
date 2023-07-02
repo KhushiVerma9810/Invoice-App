@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 const {Schema} = require("mongoose");
 
 const clientSchema = new Schema({
+  user:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'user'
+    },
     client_name :{
         type:String,
         required:true

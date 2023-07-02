@@ -27,6 +27,7 @@ const Login = () => {
 
     if (response.data.success) {
       localStorage.setItem('token', response.data.authToken); 
+      console.log(response.data.authToken);
       navigate('/dashboard');
     }
     else {

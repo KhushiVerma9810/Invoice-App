@@ -99,32 +99,34 @@ console.log(user);
 
 
 //ROUTE 3 : Add Client
-router.post("/createclient" , [
-  body('name', 'Enter a valid name').isLength({ min: 3 }),
+router.post("/createclient",fetchuser , [
+  body('client_name', 'Enter a valid name').isLength({ min: 3 }),
   body('email' , 'Enter a valid email').isEmail(),
   body('address' , 'address must be atleast 10 characters').isLength({ min: 5 }),
-  body('phoneNo' , 'Phone No must be 10 digits').isLength({ min: 5 }),
+  body('phone_no' , 'Phone No must be 10 digits').isLength({ min: 5 }),
 ],async(req ,res )=>{
-  let success = false;
-  //if there are errors return bad request and the errors
-  const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success ,errors: errors.array() });
-    }
-     // check whether the user with email exist
   try{
-    let client = await Client.findOne({email:req.body.email});
+    let success = false;
+    //if there are errors return bad request and the errors
+    const {client_name,email,phone_no,address } = req.body;
+    const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success ,errors: errors.array() });
+      }
+      // check whether the user with email exist
+    let client1 = await Client.findOne({email:req.body.email});
  
-    if(client){
+    if(client1){
      return res.status(400).json({error:"Sorry a user with this email already exists"})
     }
    
     //create a new user
-    client = await Client.create({
-      client_name: req.body.name,
-      email: req.body.email,
-      address:req.body.address,
-      phone_no :req.body.phoneNo
+   const client = new Client({
+      client_name,
+      email,
+      address,
+      phone_no,
+      user:req.user.id
      });
      success = true;
 console.log(client);
@@ -138,12 +140,13 @@ res.send(client);
   })
 
   //ROUTE 4 : Get clients details
-router.get("/getclient/:id",async(req , res)=>{
+router.get("/getclient",fetchuser,async(req , res)=>{
   try {
 
-    const clients = await Client.find({client:req.client._id});
+    const clients = await Client.find({user:req.user.id });
     res.json(clients)
 }
+// client:req.client._id
 catch (error){
     console.log(error.message);
     res.status(500).send("Internal server error");
