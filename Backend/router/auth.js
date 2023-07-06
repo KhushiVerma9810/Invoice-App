@@ -1,7 +1,7 @@
 const express = require("express");
 const router = new express.Router();
 const User = require('../Models/user');
-const Client = require("../Models/Client")
+const Client = require("../Models/Client");
 const Product = require("../Models/product")
 const  { body, validationResult } = require("express-validator");
 const invoiceInf = require("../Models/invoiceInf");
@@ -9,7 +9,26 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'khushikainvoiceapp';
 const fetchuser = require("../Middleware/fetchuser");
 const bcrypt = require("bcryptjs");
+const multer = require("multer");
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'Frontend/public/images')
+  },
+  filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + '-' + file.originalname); // Set the filename for the uploaded file
+  },
+})
+const upload = multer({ storage: storage})
+//    fileFilter: (req, file, cb) => {
+//   if (file.mimetype == "image/png" || file.mimetype == "image/jpg" || file.mimetype == "image/jpeg") {
+//       cb(null, true);
+//   } else {
+//       cb(null, false);
+//       return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
+//   }
+// } })
 
 // registeration of user
 router.post('/user/signup' ,[
@@ -99,15 +118,19 @@ console.log(user);
 
 
 //ROUTE 3 : Add Client
-router.post("/createclient",fetchuser , [
+router.post("/createclient",fetchuser,upload.single('image'), [
   body('client_name', 'Enter a valid name').isLength({ min: 3 }),
   body('email' , 'Enter a valid email').isEmail(),
   body('address' , 'address must be atleast 10 characters').isLength({ min: 5 }),
   body('phone_no' , 'Phone No must be 10 digits').isLength({ min: 5 }),
+  body('image' , 'image path'),
 ],async(req ,res )=>{
   try{
     let success = false;
     //if there are errors return bad request and the errors
+    console.log(req.file);
+    const imagepath = req.file.filename;
+    console.log(req.file.filename);
     const {client_name,email,phone_no,address } = req.body;
     const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -126,8 +149,10 @@ router.post("/createclient",fetchuser , [
       email,
       address,
       phone_no,
-      user:req.user.id
+      user:req.user.id,
+      image:imagepath,
      });
+     
      success = true;
 console.log(client);
 await client.save();

@@ -22,6 +22,10 @@ const clientSchema = new Schema({
     phone_no:{
         type:Number,
         required:true
-    }
+    },
+    image: {
+        type: String, 
+        required: false
+      },
 })
 module.exports = mongoose.model('client' , clientSchema);

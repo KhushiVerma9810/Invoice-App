@@ -4,7 +4,7 @@ const connectToMongo = require("./DB/conn");
 const userRouter = require("../Backend/router/auth");
 const hbs = require("hbs");
 const path= require("path");
-var cors = require('cors')
+var cors = require('cors');
 
 
 connectToMongo();
@@ -20,6 +20,8 @@ app.use(userRouter);
 app.set("view engine" , "hbs");
 app.set("views",templatePath);
 hbs.registerPartials(partialPath);
+
+
 
 // app.get("/",(req,res)=>{
 //     res.render('index2')

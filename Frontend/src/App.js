@@ -10,6 +10,7 @@ import Signup from './components/Signup';
 import Login from './components/Login' 
 import Addclient from './components/Addclient';
 import ClientState from './components/context/clients/ClientState';
+import Addproduct from './components/Addproduct';
 
 
 const App = () => {
@@ -27,6 +28,7 @@ const App = () => {
  <Route path="/signup" element={<Signup/>}/>
  <Route path="/login" element={<Login/>}/>
  <Route path='/clients' element={<Addclient/>}/>
+ <Route path="/products" element={<Addproduct/>}></Route>
  </Routes>
  </div>
  </div>
