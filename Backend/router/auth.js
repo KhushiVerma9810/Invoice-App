@@ -10,6 +10,7 @@ const JWT_SECRET = 'khushikainvoiceapp';
 const fetchuser = require("../Middleware/fetchuser");
 const bcrypt = require("bcryptjs");
 const multer = require("multer");
+const Company = require('../Models/Company')
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -206,6 +207,8 @@ body('invoicedate')
 ],async (req, res) => {
   try {
     let success = false;
+    
+
     //if there are errors return bad request and the errors
     const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -229,27 +232,36 @@ body('invoicedate')
 
 
 //ROUTE 6 :Add product
-router.post('/addproduct',fetchuser , [
+router.post('/addproduct',fetchuser,upload.single('image'),[
   body('name', 'Enter a product name').isLength({ min: 3 }),
   body('price' , 'Enter a price'),
+  body('image' , 'image path'),
 ],async(req , res)=>{
+  try{
   let success = false;
-  const error = validationResult(req);
+  console.log(req.file);
+    const imagename = req.file.filename;
+    console.log(req.file.filename);
+    const {name,price} = req.body;
 
+
+  const error = validationResult(req);
+  
   if (!error.isEmpty()) {
     return res.status(400).json({ success ,errors: error.array() });
   }
-  try{
     //check if product already exists
-  let product = await Product.findOne({name:req.body.name});
-  if(product){
+  let product1 = await Product.findOne({name:req.body.name});
+  if(product1){
     return res.status(400).send("that product already exists");
   }
   else{
    //create a new product
-   product= await Product.create({
-     name: req.body.name,
-     price: req.body.price
+  const product= new Product({
+     name,
+     price,
+     user:req.user.id,
+     image:imagename,
 })
 success = true;
 console.log(product);
@@ -403,6 +415,52 @@ router.patch('/updateuser/:id',fetchuser, async(req ,res)=>{
     }
 })
 
+
+//ROUTE 12: ADD COMPANY DETAILS
+router.post("/addcompany" , fetchuser ,upload.single('image'), [
+  body('comp_name', 'Enter a company name').isLength({ min: 3 }),
+  body('email' , 'Enter a valid email').isEmail(),
+  body('address' , 'address must be atleast 10 characters').isLength({ min: 5 }),
+  body('phone_no' , 'Phone No must be 10 digits').isLength(10),
+  body('country' , 'Enter country name').isLength({min:3}),
+  body('image' , 'image path'),
+  
+],async(req , res)=>{
+     try {
+      let success = false;
+      const {comp_name , email, phone_no,address , country } = req.body;
+      const imgname = req.file.filename;
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success ,errors: errors.array() });
+      }
+      // check whether the user with email exist
+    let company1 = await Client.findOne({email:req.body.email});
+ 
+    if(company1){
+     return res.status(400).json({error:"Sorry a user with this email already exists"})
+    }
+   
+      const company = new Company({
+           comp_name,
+           email,
+           phone_no,
+           address,
+           country,
+           user:req.user.id,
+           image:imgname
+      })
+      success = true;
+      await company.save();
+      console.log(company);
+      res.send(company);
+     } 
+     catch (error) {
+      console.log(error.message);
+      res.status(500).send("Internal server error");
+     }
+}
+)
  
 
 module.exports = router;

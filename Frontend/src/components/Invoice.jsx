@@ -11,10 +11,7 @@ const Invoice = () => {
   const [billing, setBilling] = useState({ name: '', address: '', extra: '' });
   const [from, setFrom] = useState({ name: '', address: '', extra: '' });
   const [items, setItems] = useState([]);
-  // const [openModal, setOpenModal] = useState(false);
-  // const modalRef = useRef(null);
-  // const refClose = useRef(null)
-  // const [isModalOpen, setIsModalOpen] = useState(false);
+  const [serialNumber, setSerialNumber] = useState(100);
 
   const generateInvoiceNumber = (min, max) => {
     const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -105,7 +102,8 @@ const Invoice = () => {
               <div  className="mb-2 md:mb-1 md:flex items-center">
                 <label className=" w-32 text-gray-800 block font-bold text-sm uppercase ">Invoice No :</label>
                 <input type="text" className ="bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-48 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                                id="inline-full-name" placeholder="eg. #INV-100001"  value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
+                                id="inline-full-name" placeholder="eg. #INV-100001"  value={invoiceNumber} />
+                                {/* onChange={(e) => setInvoiceNumber(e.target.value)} */}
               </div>
               <div className="mb-2 md:mb-1 md:flex items-center mt-4">
                 <label className="w-32 text-gray-800 block font-bold text-sm uppercase tracking-wide">Invoice Date</label>
@@ -121,7 +119,9 @@ const Invoice = () => {
               <div className="w-full md:w-1/3 mb-2 md:mb-0">
                 <div className='flex items-center' >
                 <label className="block mb-1 text-gray-800 font-bold text-sm uppercase tracking-wide mr-3">Billing Address</label>
+                <Link to="/showClients">
                 <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">existing add.</button>
+                </Link>
                 </div>
                 <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" id="inline-full-name" placeholder="Billing company name" x-model="billing.name" value={billing.address} onChange={(e) => setBilling({ ...billing, address: e.target.value })} />
               <input

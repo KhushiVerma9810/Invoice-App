@@ -1,26 +1,119 @@
 import React from 'react'
+import { useState } from 'react';
+import { useContext , useEffect } from 'react';
+import ClientContext from './context/clients/clientContext';
+import { useNavigate } from 'react-router-dom';
 
 const Addproduct = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
+  const context = useContext(ClientContext);
+  const {addproduct , products , getProduct} = context;
+  const [product,setProduct] = useState({name:"" ,price:"" , image:null})
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      console.log("getit");
+      getProduct();
+    } else {
+      navigate("/login");
+    }
+    // eslint-disable-next-line
+  }, [])
+
+  const handleSubmit =(e)=>{
+    e.preventDefault();
+    addproduct(product.name ,product.price ,product.image);
+    setProduct({name:"", price:"", image:null})
+   
+  }
+  const onChange = (e)=>{
+    setProduct({...product , [e.target.name]:e.target.value})
+  }
+  
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    setProduct({ ...product, image: file });
+    setSelectedImage(URL.createObjectURL(file));
+  };
   return (
     <div>
-<div class="min-h-screen bg-gray-100 flex items-center">
-  <div class="container mx-auto p-9 bg-white max-w-sm rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition duration-300 ">
-    <img class="h-28 w-28 rounded-full mx-auto bg-gray-500" src="" alt="" />
+      <div className="flex w-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+{/* <div class="min-h-screen bg-gray-100 flex items-center"> */}
+  <div class="container mx-auto p-9 bg-white max-w-30 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition duration-300 ">
     <div class="flex justify-center items-center">
-       <form class="space-y-6" action="#">
-       <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">Add Product</h2>
+    <div className="w-[35rem] justify-center ">
+    <h2 className="mt-4 text-3xl font-bold text-center tracking-tight text-gray-900">Add Product</h2>
+       <form class="space-y-6 mt-4" action="#" method="POST" enctype="multipart/form-data">
+       <div
+      className=""
+      onClick={() => document.getElementById('imageUpload').click()}
+    >
+    {selectedImage ? (
+        <img src={selectedImage}  alt="Uploaded" className="h-[16rem] w-[20rem] rounded-full mx-auto " />
+      ) : (
+        <div className="h-[16rem] w-[20rem] flex items-center justify-center rounded-full mx-auto border-dashed border-2 border-black">
+          <i class="bi bi-image" style={{ fontSize: '95px' }} ></i>
+        </div>
+      )}
+      <input
+        id="imageUpload"
+        type="file"
+        accept="image/*"
+        name='image'
+        onChange={handleImageUpload}
+        style={{ display: 'none' }}
+      />
+    </div>
        <div>
             <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Name</label>
-            <input type="text" name="name" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="T-shirts" required/>         </div>
+            <input type="text" name="name" value={product.name}  onChange={onChange} id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="T-shirts" required/>         </div>
         <div>
            <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price</label>
-            <input type="number" name="price" id="price" placeholder="Rs" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" required/>
+            <input type="number" value={product.price} name="price" id="price" placeholder="Rs" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" onChange={onChange} required/>
         </div>
-         <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">ADD</button>
+         <button  onClick={handleSubmit} type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">ADD</button>
     </form>
      </div>
   </div>
 </div>
+</div>
+<section className="container mx-auto p-6 font-mono">
+  <div className="w-full mb-8 overflow-hidden rounded-lg shadow-lg">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full">
+        <thead className='border-b bg-gray-800 font-medium text-white dark:border-neutral-500'>
+          <tr className="text-md font-semibold tracking-wide text-left text-gray-100  uppercase">
+            <th className="px-4 py-3">Name</th>
+            <th className="px-4 py-3">price</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white">
+        {Array.isArray(products) && products.length > 0 ? (
+        products.map((prd) => (
+          <tr  class="border-b bg-neutral-100 dark:border-neutral-500 dark:bg-neutral-700" key={prd._id}>
+            <td className="whitespace-nowrap px-6 py-4 font-medium">
+            <div class="flex items-center text-sm">
+            <div class="w-10 h-10 flex-shrink-0 mr-2 sm:mr-3">
+            {prd.image && <img className="rounded-full" src={`images/${prd.image}`} width="40" height="40" alt=""/>}</div>
+            {prd.name }
+            </div>
+            </td>
+            <td className="whitespace-nowrap px-6 py-4 font-medium">{prd.price}</td>
+          
+                    </tr>
+                    ))
+                    ) : (
+                      <tr>
+                        <td colSpan={2}>No data available</td>
+                      </tr>
+                    )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
     </div>
   )
 }

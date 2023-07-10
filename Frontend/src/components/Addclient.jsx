@@ -56,16 +56,18 @@ const navigate = useNavigate();
 
     <div class="flex justify-center items-center">
     <div className="w-[35rem] justify-center ">
-    <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">Add Client</h2>
+    <h2 className="mt-6 text-3xl font-bold text-center tracking-tight text-gray-900">Add Client</h2>
     <form action="#" method="POST" enctype="multipart/form-data" >
     <div
-      className=""
+      className="mt-4"
       onClick={() => document.getElementById('imageUpload').click()}
     >
     {selectedImage ? (
         <img src={selectedImage}  alt="Uploaded" className="h-[16rem] w-[20rem] rounded-full mx-auto " />
       ) : (
-        <div className="h-[16rem] w-[20rem] rounded-full mx-auto bg-gray-500"></div>
+        <div className="h-[16rem] w-[20rem] flex items-center justify-center rounded-full mx-auto border-dashed border-2 border-black">
+        <i class="bi bi-image" style={{ fontSize: '95px' }} ></i>
+      </div>
       )}
       <input
         id="imageUpload"

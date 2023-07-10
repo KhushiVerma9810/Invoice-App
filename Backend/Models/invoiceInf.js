@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
 const InvoiceSchema = new Schema({
-    client:{
+    user:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'client'
+        ref:'user'
     },
     invoiceDate:{
         type:String,
@@ -14,6 +14,11 @@ const InvoiceSchema = new Schema({
         type:Date,
         required:true
     },
+    clientId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'client',
+        required: true,
+      },
     items:{
         quantity: Number,
         price : String,
