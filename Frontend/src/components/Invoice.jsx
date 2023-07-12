@@ -1,25 +1,40 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Table from './Table';
-import { Link  } from 'react-router-dom';
+import ClientContext from './context/clients/clientContext';
+import { useRef , useEffect} from 'react';
+import ClientShow from './ClientShow';
 
 const Invoice = () => {
+  const context = useContext(ClientContext);
+  const {selectedUser} = context;
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(null);
   const [invoiceDueDate, setInvoiceDueDate] = useState('');
-  const [billing, setBilling] = useState({ name: '', address: '', extra: '' });
+  // const [billing, setBilling] = useState({ name: '', address: '', extra: '' });
   const [from, setFrom] = useState({ name: '', address: '', extra: '' });
   const [items, setItems] = useState([]);
-  const [serialNumber, setSerialNumber] = useState(100);
+  // const [serialNumber, setSerialNumber] = useState(100);
+  const refClose = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const generateInvoiceNumber = (min, max) => {
-    const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
-    setInvoiceNumber(`#INV-${randomNum}`);
+  const modalRef = useRef(null);
+
+  const openModal = () => {
+    if (modalRef.current) {
+      modalRef.current.openModal();
+    }
   };
+
+  // const generateInvoiceNumber = (min, max) => {
+  //   const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+  //   setInvoiceNumber(`#INV-${randomNum}`);
+  // };
   // const openModal = () => {
   //   if (modalRef.current) {
   //     modalRef.current.classList.add('show');
+  //     modalRef.current.click();
   //   }
   // };
   // const openModal = () => {
@@ -29,6 +44,11 @@ const Invoice = () => {
   //   setIsModalOpen(false);
   // };
 
+  // const openModal = () => {
+  //   if (modalRef.current) {
+  //     modalRef.current.openModal();
+  //   }
+  // };
   // const addInvoiceItem = (item) => {
   //   setItems([...items, item]);
   //   setOpenModal(false);
@@ -56,6 +76,25 @@ const Invoice = () => {
   const printInvoice = () => {
     // Handle print functionality
   };
+  const [formValues, setFormValues] = useState({ name: '',email: '' });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormValues((prevFormValues) => ({
+      ...prevFormValues,
+      [name]: value,
+    }));
+  };
+ useEffect(() => {
+    if (selectedUser) {
+      setFormValues({
+        name: selectedUser.client_name,
+        email: selectedUser.email,
+        address:selectedUser.address,
+        phoneNo:selectedUser.phone_no
+      });
+    }
+  }, [selectedUser]);
 
   const handleFileInputChange = (event) => {
     const file = event.target.files[0];
@@ -119,15 +158,19 @@ const Invoice = () => {
               <div className="w-full md:w-1/3 mb-2 md:mb-0">
                 <div className='flex items-center' >
                 <label className="block mb-1 text-gray-800 font-bold text-sm uppercase tracking-wide mr-3">Billing Address</label>
-                <Link to="/showClients">
-                <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">existing add.</button>
-                </Link>
+          
+                <button  data-te-toggle="modal"
+    data-te-target="#exampleModalCenteredScrollable"
+    data-te-ripple-init
+    data-te-ripple-color="light" type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">existing add.</button>
                 </div>
-                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" id="inline-full-name" placeholder="Billing company name" x-model="billing.name" value={billing.address} onChange={(e) => setBilling({ ...billing, address: e.target.value })} />
+                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" id="inline-full-name" placeholder="Billing company name" x-model="billing.name" />
+                {/* value={billing.address} onChange={(e) => setBilling({ ...billing, address: e.target.value })} */}
+
               <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
                         id="inline-full-name" type="text" placeholder="Billing company address"
-                        x-model="billing.address"/>
+                        x-model="billing.address" />
                     <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
                         id="inline-full-name" type="text" placeholder="Additional info" x-model="billing.extra"/>
@@ -135,17 +178,25 @@ const Invoice = () => {
               <div className="w-full md:w-1/3">
               <div className='flex items-center' >
                 <label className="text-gray-800 block mb-1 font-bold text-sm uppercase tracking-wide mr-3">Shipping Address  To:</label>
-                <button type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
+                <button  onClick={openModal}  type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">
                 <i className="bi bi-person-add mr-1"></i>existing</button>
+                <ClientShow  ref={modalRef}/>
                 </div>
-                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 rounded-lg p-2 mt-1" value={from.address} onChange={(e) => setFrom({ ...from, address: e.target.value })}  id="inline-full-name" placeholder="Your company name" x-model="from.name"/>
+                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 rounded-lg p-2 mt-1" value={formValues.name}
+        onChange={handleInputChange} name='name' id="inline-full-name" placeholder="Name" x-model="from.name"/>
                 <input
                         className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                        id="inline-full-name" type="text" placeholder="Your company address" x-model="from.address"/>
+                        id="inline-full-name" name='address' type="text" placeholder="Shipping Address" x-model="from.address" value={formValues.address}
+                        onChange={handleInputChange}/>
 
-                    <input
+                    <input name='email'
                         className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                        id="inline-full-name" type="text" placeholder="Additional info" x-model="from.extra"/>
+                        id="inline-full-name" type="email" placeholder="Email" x-model="from.extra" value={formValues.email}
+                        onChange={handleInputChange}/>
+                          <input
+                        className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                        id="inline-full-name" name='phoneNo' type="number" placeholder="Contact No." x-model="from.extra" value={formValues.phoneNo}
+                        onChange={handleInputChange}/>
             </div>
 </div>
           {/* Image */}

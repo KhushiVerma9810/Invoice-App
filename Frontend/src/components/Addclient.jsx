@@ -29,6 +29,7 @@ const navigate = useNavigate();
     setClient({name:"", email:"",phoneNo:"",address:"", image:null})
    
   }
+  
   const onChange = (e) => {
     // if (e.target.type === 'file') {
     //   handleImageUpload(e);

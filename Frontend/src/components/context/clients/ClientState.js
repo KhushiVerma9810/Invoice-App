@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import ClientContext from './clientContext';
 import axios from 'axios';
-import { addclientroute, addcompanyroute, addproductroute, getclientRoute, getproductRoute } from '../../../utils/APIRoutes';
+import { addclientroute, addcompanyroute, addproductroute, getclientRoute, getcompanyRoute, getproductRoute } from '../../../utils/APIRoutes';
 
 
 const ClientState = (props) => {
@@ -10,6 +10,7 @@ const ClientState = (props) => {
     const [values , setValues] = useState(valuesInitial);
     const[products , setProducts]= useState(valuesInitial);
     const[companies , setCompany]=useState(valuesInitial);
+    const [selectedUser, setSelectedUser] = useState(null);
 // ADD CLIENT 
     const addClient = async(client_name , email , phone_no , address , image)=>{
       const formData = new FormData();
@@ -145,28 +146,28 @@ catch(error){
 }
  }
  //GET CLIENTS
-// const getCompany = async () => {
-//   try {
-//     const token = localStorage.getItem('token');
-//     const response = await axios.get(getcompanyRoute, {
-//       headers: {
-//         'Content-Type': 'multipart/form-data; ,boundary=---XYZ',
-//         'auth-token': token,
-//       },
-//     });
-//     if (response.data.success) {
-//       localStorage.setItem('token', response.data.authToken);
-//     }
-//     const product = await response.data;
-//     console.log(product);
-//    setProducts(product);
-//   } catch (error) {
-//     console.log('Error:', error);
-//   }
-// };
+const getCompany = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get(getcompanyRoute, {
+      headers: {
+        'Content-Type': 'multipart/form-data; ,boundary=---XYZ',
+        'auth-token': token,
+      },
+    });
+    if (response.data.success) {
+      localStorage.setItem('token', response.data.authToken);
+    }
+    const company = await response.data;
+    console.log(company);
+   setCompany(company);
+  } catch (error) {
+    console.log('Error:', error);
+  }
+};
 
   return (
-   <ClientContext.Provider value={{addClient,getClient,values,addproduct,products , getProduct , addCompany , companies}}>
+   <ClientContext.Provider value={{addClient,getClient,values,addproduct,products , getProduct , addCompany , companies , getCompany ,selectedUser,setSelectedUser}}>
     {props.children}
    </ClientContext.Provider>
   )

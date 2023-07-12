@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 const AddCompany = () => {
   const context = useContext(ClientContext);
-  const {addCompany , companies} = context;
+  const {addCompany , companies ,getCompany} = context;
   const [company,setCompany] = useState({name:"" ,email:"" , phoneNo: "" , address:"" , country:"" , image:null})
   const [selectedImage, setSelectedImage] = useState(null);
   
@@ -15,7 +15,7 @@ const AddCompany = () => {
   useEffect(() => {
     if (localStorage.getItem('token')) {
       console.log("getit");
-      // getClient();
+      getCompany();
     } else {
       navigate("/login");
     }

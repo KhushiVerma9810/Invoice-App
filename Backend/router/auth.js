@@ -461,6 +461,16 @@ router.post("/addcompany" , fetchuser ,upload.single('image'), [
      }
 }
 )
+//GET COMPANIES
+router.get('/getcompany' , fetchuser,async(req,res)=>{
+  try {
+    const companies = await Company.find({});
+    res.json(companies)
+  } catch (error) {
+    console.log("error",error);
+   res.status(500).send("Internal Server Error");
+  }
+})
  
 
 module.exports = router;

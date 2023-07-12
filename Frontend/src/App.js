@@ -11,8 +11,9 @@ import Login from './components/Login'
 import Addclient from './components/Addclient';
 import ClientState from './components/context/clients/ClientState';
 import Addproduct from './components/Addproduct';
-import ShowClients from './components/ShowClients';
+// import ShowClients from './components/ShowClients';
 import AddCompany from './components/AddCompany';
+import ClientShow from './components/ClientShow';
 
 
 const App = () => {
@@ -31,7 +32,7 @@ const App = () => {
  <Route path="/login" element={<Login/>}/>
  <Route path='/clients' element={<Addclient/>}/>
  <Route path="/products" element={<Addproduct/>}></Route>
- <Route path='/showclients' element={<ShowClients/>}></Route>
+ <Route path='/showclients' element={<ClientShow/>}></Route>
  <Route path='/companies' element={<AddCompany/>}></Route>
  </Routes>
  </div>
