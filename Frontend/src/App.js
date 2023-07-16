@@ -14,6 +14,7 @@ import Addproduct from './components/Addproduct';
 // import ShowClients from './components/ShowClients';
 import AddCompany from './components/AddCompany';
 import ClientShow from './components/ClientShow';
+import ShowCompany from './components/ShowCompany';
 
 
 const App = () => {
@@ -34,6 +35,7 @@ const App = () => {
  <Route path="/products" element={<Addproduct/>}></Route>
  <Route path='/showclients' element={<ClientShow/>}></Route>
  <Route path='/companies' element={<AddCompany/>}></Route>
+ <Route path='/showcompany' element={<ShowCompany/>}></Route>
  </Routes>
  </div>
  </div>

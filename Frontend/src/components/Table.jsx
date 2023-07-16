@@ -54,15 +54,15 @@ const Table = () => {
   // }, 0);
   return (
     <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
- <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+ <table className="w-full m-12 text-sm text-left text-gray-500 dark:text-gray-400">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-6 py-3">Description</th>
             <th scope="col" class="px-6 py-3">Qty</th>
             <th scope="col" class="px-6 py-3">Price</th>
             <th scope="col" class="px-6 py-3">Amount</th>
-  
-          </tr>
+            <th scope="col" class="px-6 py-3"></th>
+          </tr>        
         </thead>
         <tbody>
           {rows.map((row, index) => (
@@ -109,8 +109,9 @@ const Table = () => {
             </tr>
       ))}
             <button className='text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700' onClick={addRow}><i class="bi bi-plus-circle pr-4"></i>Add </button>
+            <button className='text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700' ><i class="bi bi-plus-circle pr-4"></i>Existing</button>
             </tbody>
-             <tfoot>
+             <tfoot className='m-12'>
              <tr className="py-2 ml-auto mt-20 w-32">
               <th scope="row" colspan="3" class="hidden pt-6 pl-6 pr-3 text-sm font-light text-right text-slate-500 sm:table-cell md:pl-0">
                Subtotal

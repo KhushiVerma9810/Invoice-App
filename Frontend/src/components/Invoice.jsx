@@ -5,13 +5,15 @@ import Table from './Table';
 import ClientContext from './context/clients/clientContext';
 import { useRef , useEffect} from 'react';
 import ClientShow from './ClientShow';
+import ShowCompany from './ShowCompany';
 
 const Invoice = () => {
   const context = useContext(ClientContext);
-  const {selectedUser} = context;
+  const {selectedUser , selectedcomp} = context;
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [invoiceDate, setInvoiceDate] = useState(null);
   const [invoiceDueDate, setInvoiceDueDate] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
   // const [billing, setBilling] = useState({ name: '', address: '', extra: '' });
   const [from, setFrom] = useState({ name: '', address: '', extra: '' });
   const [items, setItems] = useState([]);
@@ -26,6 +28,14 @@ const Invoice = () => {
       modalRef.current.openModal();
     }
   };
+  const modalRef2 = useRef(null);
+
+  const openModal2 = () => {
+    if (modalRef2.current) {
+      modalRef2.current.openModal();
+    }
+  };
+
 
   // const generateInvoiceNumber = (min, max) => {
   //   const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -76,7 +86,8 @@ const Invoice = () => {
   const printInvoice = () => {
     // Handle print functionality
   };
-  const [formValues, setFormValues] = useState({ name: '',email: '' });
+  const [formValues, setFormValues] = useState({ name: '',email: '',address:'',phoneNo:"" });
+  const [companyValues, setCompanyValues] = useState({ name: '',email: '',address:'',phoneNo:"",country:'' ,image:null });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -84,8 +95,17 @@ const Invoice = () => {
       ...prevFormValues,
       [name]: value,
     }));
+  
   };
- useEffect(() => {
+  const handleInputChangeComp = (e) => {
+    const { name, value } = e.target;
+   setCompanyValues((prevFormValues) => ({
+      ...prevFormValues,
+      [name]: value,
+    }));
+  
+  };
+  useEffect(() => {
     if (selectedUser) {
       setFormValues({
         name: selectedUser.client_name,
@@ -95,19 +115,29 @@ const Invoice = () => {
       });
     }
   }, [selectedUser]);
+  useEffect(() => {
+    if (selectedcomp) {
+      setCompanyValues({
+        name: selectedcomp.comp_name,
+        email: selectedcomp.email,
+        address:selectedcomp.address,
+        phoneNo:selectedcomp.phone_no,
+        country:selectedcomp.country,
+        image:selectedcomp.image
+      });
+      setSelectedImage(selectedcomp.image);
+    }
+  }, [selectedcomp]);
 
   const handleFileInputChange = (event) => {
     const file = event.target.files[0];
-    const reader = new FileReader();
+    setSelectedImage(URL.createObjectURL(file));
+    setCompanyValues((prevValues) => ({
+      ...prevValues,
+      image: file,
+    }));
 
-    reader.onload = function (e) {
-      // Update image source
-      document.getElementById('image').src = e.target.result;
-      document.getElementById('image2').src = e.target.result;
     };
-
-    reader.readAsDataURL(file);
-  };
 
   return (
   <>
@@ -162,18 +192,32 @@ const Invoice = () => {
                 <button  data-te-toggle="modal"
     data-te-target="#exampleModalCenteredScrollable"
     data-te-ripple-init
-    data-te-ripple-color="light" type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700">existing add.</button>
+    data-te-ripple-color="light" type="button" class="text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-3 py-2.5 mr-2 mb-2 dark:bg-gray-800 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700"  onClick={openModal2} >existing add.</button>
+    <ShowCompany ref={modalRef2}></ShowCompany>
                 </div>
-                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" id="inline-full-name" placeholder="Billing company name" x-model="billing.name" />
+                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500" id="inline-full-name" placeholder="Billing company name" x-model="billing.name"  name='name' value={companyValues.name}
+        onChange={handleInputChangeComp}  />
                 {/* value={billing.address} onChange={(e) => setBilling({ ...billing, address: e.target.value })} */}
 
               <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
                         id="inline-full-name" type="text" placeholder="Billing company address"
-                        x-model="billing.address" />
+                        x-model="billing.address" name='address' value={companyValues.address}
+                        onChange={handleInputChangeComp}/>
+                         <input
+                        class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                        id="inline-full-name" name='country' type="text" placeholder="Billing company address"
+                        x-model="billing.address"  value={companyValues.country}
+                        onChange={handleInputChangeComp}/>
                     <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                        id="inline-full-name" type="text" placeholder="Additional info" x-model="billing.extra"/>
+                        id="inline-full-name" type="email" placeholder="Additional info" x-model="billing.extra" name='email' value={companyValues.email}
+                        onChange={handleInputChangeComp}/>
+                         <input
+                        class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
+                        id="inline-full-name" type="number" placeholder="Billing company address"
+                        x-model="billing.address" name='phoneNo' value={companyValues.phoneNo}
+                        onChange={handleInputChangeComp}/>
                         </div>
               <div className="w-full md:w-1/3">
               <div className='flex items-center' >
@@ -200,15 +244,35 @@ const Invoice = () => {
             </div>
 </div>
           {/* Image */}
-          <div className="flex items-center justify-center mb-8">
+          <div
+      className="mt-4"
+      onClick={() => document.getElementById('imageUpload').click()}
+    >
+    {selectedImage ? (
+        <img src={`images/${companyValues.image}`}  alt="Uploaded" className="h-[9rem] w-[10rem] rounded-full mx-auto " />
+      ) : (
+        <div className="h-[9rem] w-[10rem] flex items-center justify-center rounded-full mx-auto border-dashed border-2 border-black">
+        <i class="bi bi-image" style={{ fontSize: '60px' }} ></i>
+      </div>
+      )}
+      <input
+        id="imageUpload"
+        type="file"
+        accept="image/*"
+        name='image'
+        onChange={handleFileInputChange}
+        style={{ display: 'none' }}
+      />
+    </div>
+          {/* <div className="flex items-center justify-center mb-8">
             <img src="placeholder.png" id="image" alt="Invoice" className="w-32 h-32 object-contain rounded-md" />
           </div>
           <div className="flex justify-center">
-            <label className="text-sm text-gray-500 cursor-pointer">
-              Upload Custom Image
+            <label className="text-sm text-gray-500 cursor-pointer bg-gray-500">
+             
               <input type="file" className="hidden" accept="image/*" onChange={handleFileInputChange} />
             </label>
-          </div>
+          </div> */}
 
           {/* Invoice items */}
           <div className="mb-8">
