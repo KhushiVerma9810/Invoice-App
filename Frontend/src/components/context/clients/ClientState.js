@@ -12,6 +12,7 @@ const ClientState = (props) => {
     const[companies , setCompany]=useState(valuesInitial);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedcomp, setSelectedComp] = useState(null);
+    const [selectedProd , setSelectedProd] = useState(null);
 // ADD CLIENT 
     const addClient = async(client_name , email , phone_no , address , image)=>{
       const formData = new FormData();
@@ -168,7 +169,7 @@ const getCompany = async () => {
 };
 
   return (
-   <ClientContext.Provider value={{addClient,getClient,values,addproduct,products , getProduct , addCompany , companies , getCompany ,selectedUser,setSelectedUser , selectedcomp,setSelectedComp}}>
+   <ClientContext.Provider value={{addClient,getClient,values,addproduct,products , getProduct , addCompany , companies , getCompany ,selectedUser,setSelectedUser , selectedcomp,setSelectedComp ,selectedProd,setSelectedProd}}>
     {props.children}
    </ClientContext.Provider>
   )

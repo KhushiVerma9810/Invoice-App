@@ -15,11 +15,9 @@ const Invoice = () => {
   const [invoiceDueDate, setInvoiceDueDate] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   // const [billing, setBilling] = useState({ name: '', address: '', extra: '' });
-  const [from, setFrom] = useState({ name: '', address: '', extra: '' });
+  // const [from, setFrom] = useState({ name: '', address: '', extra: '' });
   const [items, setItems] = useState([]);
   // const [serialNumber, setSerialNumber] = useState(100);
-  const refClose = useRef(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const modalRef = useRef(null);
 
@@ -105,6 +103,8 @@ const Invoice = () => {
     }));
   
   };
+
+
   useEffect(() => {
     if (selectedUser) {
       setFormValues({
@@ -115,6 +115,9 @@ const Invoice = () => {
       });
     }
   }, [selectedUser]);
+  
+
+
   useEffect(() => {
     if (selectedcomp) {
       setCompanyValues({
@@ -125,18 +128,20 @@ const Invoice = () => {
         country:selectedcomp.country,
         image:selectedcomp.image
       });
-      setSelectedImage(selectedcomp.image);
+      
     }
   }, [selectedcomp]);
 
   const handleFileInputChange = (event) => {
     const file = event.target.files[0];
     setSelectedImage(URL.createObjectURL(file));
-    setCompanyValues((prevValues) => ({
-      ...prevValues,
-      image: file,
-    }));
-
+    console.log(file);
+    // setCompanyValues((prevValues) => ({
+    //   ...prevValues,
+    //   image: file,
+      
+    // }));
+    setCompanyValues({ ...companyValues, image: file });
     };
 
   return (
@@ -244,7 +249,7 @@ const Invoice = () => {
             </div>
 </div>
           {/* Image */}
-          <div
+          {/* <div
       className="mt-4"
       onClick={() => document.getElementById('imageUpload').click()}
     >
@@ -260,10 +265,35 @@ const Invoice = () => {
         type="file"
         accept="image/*"
         name='image'
+        src={selectedImage}
         onChange={handleFileInputChange}
         style={{ display: 'none' }}
       />
-    </div>
+    </div> */}
+    <div className="mt-4" onClick={() => document.getElementById('imageUpload').click()}>
+      
+  {selectedImage ? (
+    <img src={selectedImage} alt="Uploaded" className="h-[9rem] w-[10rem] rounded-full mx-auto" />
+  ) : (
+    <>
+      {companyValues.image ? (
+        <img src={`/images/${companyValues.image}`} alt="Uploaded" className="h-[9rem] w-[10rem] rounded-full mx-auto" />
+      ) : (
+        <div className="h-[9rem] w-[10rem] flex items-center justify-center rounded-full mx-auto border-dashed border-2 border-black">
+          <i className="bi bi-image" style={{ fontSize: '60px' }}></i>
+        </div>
+      )}
+    </>
+  )}
+  <input
+    id="imageUpload"
+    type="file"
+    accept="image/*"
+    name="image"
+    onChange={handleFileInputChange}
+    style={{ display: 'none' }}
+  />
+</div>
           {/* <div className="flex items-center justify-center mb-8">
             <img src="placeholder.png" id="image" alt="Invoice" className="w-32 h-32 object-contain rounded-md" />
           </div>
