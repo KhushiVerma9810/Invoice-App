@@ -181,7 +181,7 @@ catch (error){
 
 //ROUTE 5 :Invoice creation
 router.post("/addinvoice" ,fetchuser, [
-body('name' , 'Enter a valid name').isLength({ min: 3 }),
+body('InvoiceNo' , 'Enter a valid combination letters and Numbers').isLength({ min: 3 }),
 body('invoicedate')
   .notEmpty().withMessage('Date is required')
   .isDate().withMessage('Invalid date format')
@@ -203,28 +203,92 @@ body('invoicedate')
       throw new Error('Date must be in the future');
     }
     return true;
-  })
-],async (req, res) => {
+  }),
+  body('items')
+  .isArray({ min: 1 })
+  .withMessage('Items must be an array with at least one item'),
+
+body('items.*.prod_name')
+  .isString()
+  .withMessage('Product name must be a string')
+  .isLength({ min: 3 })
+  .withMessage('Product name must be at least 3 characters long'),
+
+body('items.*.quantity')
+  .isInt({ min: 1 })
+  .withMessage('Quantity must be a positive integer'),
+
+body('items.*.price')
+  .isString()
+  .withMessage('Price must be a Number'),
+
+body('items.*.amount')
+  .isString()
+  .withMessage('Amount must be a Number'),
+  body('subtotal' , 'Enter a subtotal of amounts').isInt(),
+  body('discount' , 'Enter a discount in percentage').isInt(),
+  body('tax','enter a tax').isInt(),
+  body('client.client_name').notEmpty().withMessage('Name is required'),
+  body('client.email').isEmail().withMessage('Invalid email'),
+  body('client.phone_no').isInt().withMessage('Phone number must be an integer'),
+  body('client.address').isString().isLength({min:20}).withMessage('address must be 20 characters long'),
+  body('company.compName').notEmpty().withMessage('Name is required'),
+  body('company.emailcmp').isEmail().withMessage('Invalid email'),
+  body('company.phone_nocmp').isInt().withMessage('Phone number must be an integer'),
+  body('company.addresscmp').isString().isLength({min:20}).withMessage('address must be 20 characters long'),
+  body('company.country').isString().isLength({min:3}).withMessage('country must be 3 characters long'),
+
+  body('subtotal' , 'Enter a subtotal of amounts').isInt(),
+  body('discount' , 'Enter a discount in percentage').isInt(),
+  body('tax','enter a tax').isInt(),
+  body('image','Enter a url link').isString()
+]
+,async (req, res) => {
   try {
     let success = false;
-    
+    const { client_name, email, phone_no , address } = req.body.client;
+    const{compName,emailcmp,addresscmp , phone_nocmp , country} = req.body.company;
+    const{items , InvoiceNo,invoicedate , tax,duedate,discount,subtotal , image}= req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: 'Items should be an array of objects' });
+    }
+    const itemsArray = items.map(item => ({
+      prod_name: item.prod_name,
+      quantity: item.quantity,
+      amount:item.amount,
+      price:item.price
+    }));
 
     //if there are errors return bad request and the errors
     const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ success ,errors: errors.array() });
       }
-    let product = await Product.findOne({});
-    let client = await Client.findOne({});
+    // if (itemsArray && Array.isArray(itemsArray)) {
+    //   for (const item of itemsArray) {
+    //     const { prod_name, quantity , price , amount } = item;
+    //     const newItem = new invoiceInf({ prod_name, quantity , price , amount });
+
+    //     await newItem.save();
+    //   }
+
+    // }
+
       let invoice = await invoiceInf.create({
-        clientData :client,
-        invoiceDate : req.body.invoicedate,
-        dueDate : req.body.duedate,
-        productDetails:product
+        items:itemsArray,
+        client :{client_name:client_name , email:email,address:address,phone_no:phone_no},
+        company:{comp_name:compName , email:emailcmp,address:addresscmp,country:country,phone_no:phone_nocmp},
+        invoiceNo:InvoiceNo,
+        invoiceDate :invoicedate,
+        dueDate :duedate,
+        subtotal:subtotal,
+        tax:tax,
+        discount:discount,
+        image:image
        });
        success = true;
        res.send(invoice);
-  } catch (error) {
+ } catch (error) {
     console.log(error.message);
     res.status(500).send("Internal server error");
   }
