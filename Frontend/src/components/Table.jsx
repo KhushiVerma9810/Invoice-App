@@ -1,132 +1,114 @@
 import React from 'react'
-import { useState , useContext , useEffect,useRef } from 'react';
+import { useState , useContext , useEffect,useRef,useCallback } from 'react';
 import ShowProducts from './ShowProducts';
 import ClientContext from './context/clients/clientContext';
 
 
-const Table = () => {
+const Table = ({itemsfunc , totalfunc}) => {
   const [rows, setRows] = useState([]);
   const [state,setState]=useState({
-    discount: "",
-    tax: "",
+    discount: '',
+    tax: '',
+    subtotal:'',
+    total:''
   })
   const [selectedImagetbl, setSelectedImagetbl] = useState(new Array(rows.length).fill(''));
-
   const context = useContext(ClientContext);
   const {selectedProd} = context;
-  const [productVal , setProductVal] = useState({name:'',price:'', image:null,quantity:''});
-
-  // const handleInputChangeProd = () => {
-  //     if (selectedProd) {
-  //       setProductVal((prevRows) => [
-  //         ...prevRows,
-  //         {
-  //           quantity: '',
-  //           price: selectedProd.price,
-  //           name: selectedProd.name,
-  //           image: selectedProd.image,
-  //         },
-  //       ]);
-  //     }
-  //   };
-  // useEffect(() => {
-  //   if (selectedProd) {
-  //     setProductVal({
-  //       name: selectedProd.name,
-  //       email: selectedProd.price,
-  //       image:selectedProd.image,
-  //     });
-  //   }
-  // }, [selectedProd]);
+  const [productVal , setProductVal] = useState({prod_name:'',price:0, image:"",quantity:0 , amount:0});
+ 
   
 useEffect(()=>{
   if(selectedProd){
     const newRow = {
-      name: selectedProd.name,
+      prod_name: selectedProd.name,
       price: selectedProd.price,
       image: selectedProd.image,
-      quantity: productVal.quantity
+      quantity: productVal.quantity,
+      amount:productVal.amount
+
     };
-    setRows((prevRows) => [...prevRows, newRow]);
-    setProductVal({name:'',price:'', quantity: ''});
-    // setSelectedImagetbl(selectedProd.image);
+    // setRows((prevRows) => [...prevRows, newRow]);
+    setRows([...rows ,{prod_name:newRow.prod_name, image:newRow.image, price:newRow.price, quantity:newRow.quantity ,amount:newRow.amount}]);
+    setProductVal({prod_name:'',price:newRow.price, quantity: 0 , amount:0 , image:newRow.image});
+
   }
 },[selectedProd]);
 
   const addRow = () => {
-    setRows([...rows, {name: '', image:null, price: '', quantity: '' }]);
+    
+    setRows([...rows, {prod_name: '', price: 0, quantity: 0 ,amount:0 , image:""}]);
+    console.log(rows)
+    
   };
  
 
-  // const handleInputChange = (index, column, value) => {
-    // const updatedRows = [...rows];
-    // updatedRows[index][column] = value;
-    // setRows(updatedRows);
-  //   setRows((prevRows) => {
-  //     const updatedRows = [...prevRows];
-  //     updatedRows[index] = {
-  //       ...updatedRows[index],
-  //       [column]: value,
-  //     };
-  //     return updatedRows;
-  //   });
-  // };
-  const handleFileInputChangetbl = (event , index) => {
-    // const file = event.target.files[0];
-    // setSelectedImagetbl(URL.createObjectURL(file));
-    // const newRows = [...rows];
-    // newRows[index].image = file;
-    // setRows(newRows);
-    const file = event.target.files[0];
-    console.log(file);
-    const newSelectedImages = [...selectedImagetbl];
-    newSelectedImages[index] = URL.createObjectURL(file);
-    setSelectedImagetbl(newSelectedImages);
-        setProductVal((prevValues) => ({
-      ...prevValues,
-      image: file,
-    }));
-    // const updatedRows = [...rows];
-    // updatedRows[index].image = file;
-    // setRows(updatedRows);
 
+    // setRows((prevRows) => {
+    //   const updatedRows = [...prevRows];
+    //   updatedRows[index] = {
+    //     ...updatedRows[index],
+        // image: '', // Set 'image' to an empty string initially
+      // };
+      // if (updatedRows[index].image == '' && selectedImagetbl[index]) {
+        // If 'row.image' is not set but 'selectedImagetbl' exists, use the 'selectedImagetbl'
+      //   updatedRows[index].image = file.name;
+      //   console.log(updatedRows[index].image);
+      // }
+  
+      // return updatedRows;
+    const handleFileInputChangetbl = (event, index) => {
+      const file = event.target.files[0];
+      console.log(file);
+      const newSelectedImages = [...selectedImagetbl];
+      newSelectedImages[index] = URL.createObjectURL(file);
+      setSelectedImagetbl(newSelectedImages);
+      setRows((rows) => {
+      // const updatedRows = [...rows];  
+      // if(updatedRows[index].image === "" && selectedImagetbl[index]){
+      //   updatedRows[index].image= file.name;
+      // }
+      // return updatedRows;
+      console.log(index)
+      const updatedRows = [...rows];
+      const updatedRow = { ...updatedRows[index] }; // Create a copy of the row to update
+         
+      if (updatedRow.image === "") {
+        updatedRow.image = file.name;
+      }
+      updatedRows[index] = updatedRow; // Update the specific row in the updatedRows array
+      return updatedRows;
+    })
+    
     };
-
   
   const handleInputChange = (e , index) => {
     const { name, value } = e.target;
     setProductVal((prevProductVal) => ({
       ...prevProductVal,
       [name]: value,
-    }));
+      amount: calculateAmount(name === 'quantity' ? value : prevProductVal.quantity, name === 'price' ? value : prevProductVal.price),
+    }
+    )
+    );
     setRows((rows) => {
       const updatedRows = [...rows];
+   
       updatedRows[index] = {
         ...updatedRows[index],
         [name]: value,
+        // amount: calculateAmount(updatedRows[index].quantity, updatedRows[index].price),
+        amount: calculateAmount(name === 'quantity' ? value : updatedRows[index].quantity, name === 'price' ? value : updatedRows[index].price),
       };
+      // if(updatedRows[index].image == '' && selectedImagetbl[index]){
+      //   updatedRows[index].image= productVal.image;
+      // }
       return updatedRows;
-    });
-  };
+    })
+   }
+    
   
-  // const handleAddRow = () => {
-  //   if (selectedProd) {
-  //     const newRow = {
-  //       name: selectedProd.name,
-  //       price: selectedProd.price,
-  //       quantity: productVal.quantity,
-  //       image: selectedProd.image,
-  //     };
-  //     setRows((prevRows) => [...prevRows, newRow]);
-  //     setProductVal({ name: '', price: '', quantity: '', image: null });
-  //   }
-  // };
-  
-  // const mul = rows.map((row) => {
-  //   const qty = parseFloat(row.qty);
-  //   const price = parseFloat(row.price);
-  //   return isNaN(qty) || isNaN(price) ? '' : qty * price;
-  // });
+ 
 const calculateAmount = (qty, price) => {
   const parsedQty = parseFloat(qty);
   const parsedPrice = parseFloat(price);
@@ -134,7 +116,8 @@ const calculateAmount = (qty, price) => {
     return 0;
   }
   return parsedQty * parsedPrice;
-};
+}
+
 
 const totalAmount = rows.reduce((acc, row) => {
   const amount = calculateAmount(row.quantity, row.price);
@@ -146,7 +129,8 @@ const handleChange=(evt)=>{
 setState((prevState) => ({
   ...prevState,
   [name]: value,
-}));  
+
+}));
 }
 
 const TotalSum =rows.reduce((acc, row)=>{
@@ -164,19 +148,44 @@ const modalRef3 = useRef(null);
       modalRef3.current.openModal();
     }
   };
-  const handleQuantityChange = (index, value) => {
-    setRows((prevRows) => {
-      const updatedRows = [...prevRows];
-      updatedRows[index].quantity = value;
-      return updatedRows;
-    });
-    
-  };
-
-  // const totalAmount = rows.reduce((acc, row) => {
-  //   const amount = parseFloat(row.amount);
-  //   return isNaN(amount) ? acc : acc + amount;
-  // }, 0);
+ 
+    useEffect(() => {
+    setState((prevState) => ({
+      ...prevState,
+      total: TotalSum,
+      subtotal:totalAmount
+    }));
+    itemsfunc(rows)
+    totalfunc(state)
+  }, [TotalSum , totalAmount]);
+  // useEffect(() => {
+  //   const tdElement = document.querySelector('td[name="amount"]');
+  //   if (tdElement) {
+  //     const amt = tdElement.textContent.trim();
+  //     console.log('amt',amt);
+      // Get the text content of the <td> element and set it in the state
+      // setRows((prevState) => ({
+      //   ...prevState,
+      //   amount:amt
+      // })); 
+  //     setProductVal((prevState) => ({
+  //       ...prevState,
+  //       amount: amt
+  //     })); 
+  //      console.log(amt);
+  //   }
+  //  }, [calculateAmount])
+  // useEffect(() => {
+  //   const tdElement = document.querySelector('td[name="amount"]');
+  //   if (tdElement) {
+  //     // Get the text content of the <td> element and set it in the state
+  //     setRows((rowss) => ({
+  //       ...rowss,
+  //       amount: tdElement.textContent.trim()
+  //     }));
+  //   }
+  // }, [calculateAmount])
+  
   return (
     <div ref={modalRef3} className="relative overflow-x-auto shadow-md sm:rounded-lg">
  <table className="w-full mb-10 text-sm text-left text-gray-500 dark:text-gray-400">
@@ -198,7 +207,7 @@ const modalRef3 = useRef(null);
             <div class="w-10 h-10 flex-shrink-0 mr-2 sm:mr-3">
             <div onClick={() => document.getElementById(`imageUploadtbl-${index}`).click()}>
       
-  {row.image ? (
+  {row.image && !selectedImagetbl[index] ? (
     <img src={`/images/${row.image}`} alt="Uploaded" className="h-[2rem] w-[2rem] rounded-full mx-auto" />
   ) : (
     <>
@@ -222,12 +231,12 @@ const modalRef3 = useRef(null);
 </div>
            
             </div>
-            <input value={row.name} name='name'   onChange={(e) => handleInputChange(e, index)}/>
+            <input value={row.prod_name} name='prod_name'   onChange={(e) => handleInputChange(e, index)}/>
             </div>
               </td>
               <td>
                 <input name='quantity'   value={row.quantity}
-            onChange={(e) => handleQuantityChange(index, e.target.value)}
+            onChange={(e) => handleInputChange(e, index)}
                 />
               </td>
               <td>
@@ -236,7 +245,7 @@ const modalRef3 = useRef(null);
                     onChange={(e) => handleInputChange(e,index)}
                 />
               </td>
-              <td>
+              <td name="amount">
               {calculateAmount(row.quantity, row.price)}
               {/* {mul[index]} */}
               </td>
@@ -261,7 +270,7 @@ const modalRef3 = useRef(null);
               <th scope="row" class="pt-6 pl-4 pr-3 text-sm font-light text-left text-slate-500 sm:hidden">
                Subtotal
               </th>
-              <td class="pt-6 pl-3 pr-4 text-sm text-right text-slate-500 sm:pr-6 md:pr-0">
+              <td class="pt-6 pl-3 pr-4 text-sm text-right text-slate-500 sm:pr-6 md:pr-0" name="subtotal">
                 {totalAmount.toFixed(2)}
               </td>
              </tr>
@@ -300,8 +309,8 @@ const modalRef3 = useRef(null);
               <th scope="row" class="pt-4 pl-4 pr-3 text-sm font-normal text-left text-slate-700 sm:hidden">
                Total
               </th>
-              <td class="pt-4 pl-3 pr-4 text-sm font-normal text-right text-slate-700 sm:pr-6 md:pr-0">
-               {TotalSum}
+              <td class="pt-4 pl-3 pr-4 text-sm font-normal text-right text-slate-700 sm:pr-6 md:pr-0" name="total">
+               {TotalSum} 
               </td>
             
              </tr>

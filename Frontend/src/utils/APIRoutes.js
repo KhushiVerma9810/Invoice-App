@@ -7,3 +7,4 @@ export const addproductroute =`${host}/addproduct`;
 export const getproductRoute =`${host}/getproduct`;
 export const addcompanyroute =`${host}/addcompany`;
 export const getcompanyRoute =`${host}/getcompany`;
+export const addinvoiceRoute = `${host}/addinvoice`;

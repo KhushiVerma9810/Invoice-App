@@ -30,7 +30,13 @@ const upload = multer({ storage: storage})
 //       return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
 //   }
 // } })
-
+const formatDate = (inputDate) => {
+  const date = new Date(inputDate);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 // registeration of user
 router.post('/user/signup' ,[
     body('name' , 'Enter a valid name').isLength({ min: 3 }),
@@ -188,7 +194,9 @@ body('invoicedate')
   .custom((value) => {
     const currentDate = new Date();
     const inputDate = new Date(value);
-    if (inputDate === currentDate) {
+    // if (!moment(value, 'DD/MM/YYYY', true).isValid() && inputDate === currentDate) {
+    //   throw new Error('Invalid date format. Date should be in DD/MM/YYYY format.');
+     if (inputDate === currentDate) {
       throw new Error('please write present date');
     }
     return true;
@@ -219,12 +227,15 @@ body('items.*.quantity')
   .withMessage('Quantity must be a positive integer'),
 
 body('items.*.price')
-  .isString()
+  .isNumeric()
   .withMessage('Price must be a Number'),
 
 body('items.*.amount')
-  .isString()
+  .isNumeric()
   .withMessage('Amount must be a Number'),
+  body('items.*.image')
+  .isString()
+  .withMessage('Enter image file name'),
   body('subtotal' , 'Enter a subtotal of amounts').isInt(),
   body('discount' , 'Enter a discount in percentage').isInt(),
   body('tax','enter a tax').isInt(),
@@ -248,7 +259,7 @@ body('items.*.amount')
     let success = false;
     const { client_name, email, phone_no , address } = req.body.client;
     const{compName,emailcmp,addresscmp , phone_nocmp , country} = req.body.company;
-    const{items , InvoiceNo,invoicedate , tax,duedate,discount,subtotal , image}= req.body;
+    const{items , InvoiceNo,invoicedate , tax,duedate,discount,subtotal , image,total}= req.body;
     if (!Array.isArray(items)) {
       return res.status(400).json({ error: 'Items should be an array of objects' });
     }
@@ -256,7 +267,8 @@ body('items.*.amount')
       prod_name: item.prod_name,
       quantity: item.quantity,
       amount:item.amount,
-      price:item.price
+      price:item.price,
+      image:item.image
     }));
 
     //if there are errors return bad request and the errors
@@ -275,16 +287,17 @@ body('items.*.amount')
     // }
 
       let invoice = await invoiceInf.create({
-        items:itemsArray,
-        client :{client_name:client_name , email:email,address:address,phone_no:phone_no},
-        company:{comp_name:compName , email:emailcmp,address:addresscmp,country:country,phone_no:phone_nocmp},
         invoiceNo:InvoiceNo,
         invoiceDate :invoicedate,
         dueDate :duedate,
+        items:itemsArray,
+        client :{client_name:client_name , email:email,address:address,phone_no:phone_no},
+        company:{comp_name:compName , email:emailcmp,address:addresscmp,country:country,phone_no:phone_nocmp},
         subtotal:subtotal,
         tax:tax,
         discount:discount,
-        image:image
+        image:image,
+        total:total
        });
        success = true;
        res.send(invoice);

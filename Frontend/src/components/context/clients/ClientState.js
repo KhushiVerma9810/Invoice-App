@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import ClientContext from './clientContext';
 import axios from 'axios';
-import { addclientroute, addcompanyroute, addproductroute, getclientRoute, getcompanyRoute, getproductRoute } from '../../../utils/APIRoutes';
+import { addclientroute, addcompanyroute, addinvoiceRoute, addproductroute, getclientRoute, getcompanyRoute, getproductRoute } from '../../../utils/APIRoutes';
 
 
 const ClientState = (props) => {
@@ -10,6 +10,7 @@ const ClientState = (props) => {
     const [values , setValues] = useState(valuesInitial);
     const[products , setProducts]= useState(valuesInitial);
     const[companies , setCompany]=useState(valuesInitial);
+    const[Invoices , setInvoice]=useState(valuesInitial);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedcomp, setSelectedComp] = useState(null);
     const [selectedProd , setSelectedProd] = useState(null);
@@ -147,6 +148,30 @@ catch(error){
   console.log('Error:', error);
 }
  }
+
+ //Add Invoice Details
+ const addInvoice = async(InvoiceNo , invoicedate , duedate,compName,itemsArray , subtotal , discount , tax , client_name,email,emailcmp , address , addresscmp , country , phone_no , phone_nocmp , image , total)=>{
+  const token = localStorage.getItem('token');
+  const itemsArray2 = [...itemsArray];
+ const client = {client_name:client_name,email:email,address:address,phone_no:phone_no};
+  const company={compName:compName , emailcmp:emailcmp,addresscmp:addresscmp,country:country,phone_nocmp:phone_nocmp};
+  try {
+    const response = await axios.post(addinvoiceRoute,{InvoiceNo , invoicedate,duedate,items: itemsArray2 ,client , company,subtotal ,tax,discount , image, total},{
+      headers:{
+        'Content-Type':'application/json',
+        'auth-token':token,
+      }
+    })
+    console.log("response",response)
+    if(response.data.success){
+      localStorage.setitem('token' , response.data.authToken);
+    }
+    const invoice = await response.data;
+    setInvoice(Invoices.concat(invoice));
+  } catch (error) {
+    console.log('error',error)
+  }
+ }
  //GET CLIENTS
 const getCompany = async () => {
   try {
@@ -169,7 +194,7 @@ const getCompany = async () => {
 };
 
   return (
-   <ClientContext.Provider value={{addClient,getClient,values,addproduct,products , getProduct , addCompany , companies , getCompany ,selectedUser,setSelectedUser , selectedcomp,setSelectedComp ,selectedProd,setSelectedProd}}>
+   <ClientContext.Provider value={{addClient,getClient,values,addproduct,products , getProduct , addCompany , companies , getCompany ,selectedUser,setSelectedUser , selectedcomp,setSelectedComp ,selectedProd,setSelectedProd , addInvoice , Invoices}}>
     {props.children}
    </ClientContext.Provider>
   )

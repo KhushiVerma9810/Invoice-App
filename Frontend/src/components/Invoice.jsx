@@ -8,17 +8,31 @@ import ClientShow from './ClientShow';
 import ShowCompany from './ShowCompany';
 
 const Invoice = () => {
+  const currentDate = new Date();
   const context = useContext(ClientContext);
-  const {selectedUser , selectedcomp} = context;
+  const {selectedUser , selectedcomp , addInvoice } = context;
+  const [dates , setdates] = useState({invoicedate:'' , duedate:''});
   const [invoiceNumber, setInvoiceNumber] = useState('');
-  const [invoiceDate, setInvoiceDate] = useState(null);
+  const [invoiceDate, setInvoiceDate] = useState(currentDate);
   const [invoiceDueDate, setInvoiceDueDate] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
   // const [billing, setBilling] = useState({ name: '', address: '', extra: '' });
   // const [from, setFrom] = useState({ name: '', address: '', extra: '' });
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState({prod_name:'',price:'',quantity:'',amount:'' ,image:null});
   // const [serialNumber, setSerialNumber] = useState(100);
+ const [Total , setTotal]=useState({discount:'' , tax:'' , subtotal:'' , total:''})
+  
+   useEffect(() => {
+     generateInvoiceNumber();
+  
+   }, [])
+   
 
+
+  const handleSubmit =(e)=>{
+    e.preventDefault();
+    addInvoice(invoiceNumber, dates.invoicedate , dates.duedate ,companyValues.name,items, Total.subtotal ,Total.discount , Total.tax ,formValues.client_name,formValues.email,companyValues.emailcmp , formValues.address , companyValues.addresscmp , companyValues.country , formValues.phoneNo , companyValues.phone_nocmp , companyValues.image , Total.total);
+  }
   const modalRef = useRef(null);
 
   const openModal = () => {
@@ -33,12 +47,35 @@ const Invoice = () => {
       modalRef2.current.openModal();
     }
   };
+  const formatDatefunc = (date) => {
+    if (date instanceof Date) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${year}/${month}/${day}`;
+    }
+    return '';
+  };
+  
+  const handleDateChange = (selectedDate) => {
+    const formatdueDate = formatDatefunc(selectedDate);
+    setInvoiceDueDate(selectedDate);
+    const formatdate = formatDatefunc(currentDate);
+    setdates((prevValues) => ({
+      ...prevValues,
+     duedate: formatdueDate,
+     invoicedate: formatdate,
+    }));
+     
+  };
 
 
-  // const generateInvoiceNumber = (min, max) => {
-  //   const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
-  //   setInvoiceNumber(`#INV-${randomNum}`);
-  // };
+  const generateInvoiceNumber = () => {
+    const min = 10; 
+    const max = 9999; 
+    const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+    setInvoiceNumber(`#INV-${randomNum}`);
+  };
   // const openModal = () => {
   //   if (modalRef.current) {
   //     modalRef.current.classList.add('show');
@@ -62,30 +99,16 @@ const Invoice = () => {
   //   setOpenModal(false);
   // };
 
-  const deleteItem = (itemId) => {
-    setItems(items.filter((item) => item.id !== itemId));
-  };
+  // const deleteItem = (itemId) => {
+  //   setItems(items.filter((item) => item.id !== itemId));
+  // };
 
-  const numberFormat = (value) => {
-    // Format number as per your requirement
-    return value;
-  };
-
-  const netTotal = () => {
-    // Calculate net total
-    return 0;
-  };
-
-  const totalGST = () => {
-    // Calculate total GST
-    return 0;
-  };
 
   const printInvoice = () => {
     // Handle print functionality
   };
-  const [formValues, setFormValues] = useState({ name: '',email: '',address:'',phoneNo:"" });
-  const [companyValues, setCompanyValues] = useState({ name: '',email: '',address:'',phoneNo:"",country:'' ,image:null });
+  const [formValues, setFormValues] = useState({ client_name: '',email: '',address:'',phoneNo:"" });
+  const [companyValues, setCompanyValues] = useState({ name: '',emailcmp: '',addresscmp:'',phone_nocmp:"",country:'' ,image:null });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -108,7 +131,7 @@ const Invoice = () => {
   useEffect(() => {
     if (selectedUser) {
       setFormValues({
-        name: selectedUser.client_name,
+        client_name: selectedUser.client_name,
         email: selectedUser.email,
         address:selectedUser.address,
         phoneNo:selectedUser.phone_no
@@ -122,9 +145,9 @@ const Invoice = () => {
     if (selectedcomp) {
       setCompanyValues({
         name: selectedcomp.comp_name,
-        email: selectedcomp.email,
-        address:selectedcomp.address,
-        phoneNo:selectedcomp.phone_no,
+        emailcmp: selectedcomp.email,
+        addresscmp:selectedcomp.address,
+        phone_nocmp:selectedcomp.phone_no,
         country:selectedcomp.country,
         image:selectedcomp.image
       });
@@ -143,6 +166,15 @@ const Invoice = () => {
     // }));
     setCompanyValues({ ...companyValues, image: file });
     };
+
+    const itemsfunc =(value)=>{
+      setItems(value);
+      // console.log(items.name)
+    }
+    const totalfunc=(value)=>{
+      setTotal(value)
+      // console.log(Total);
+    }
 
   return (
   <>
@@ -176,16 +208,17 @@ const Invoice = () => {
               <div  className="mb-2 md:mb-1 md:flex items-center">
                 <label className=" w-32 text-gray-800 block font-bold text-sm uppercase ">Invoice No :</label>
                 <input type="text" className ="bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-48 py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                                id="inline-full-name" placeholder="eg. #INV-100001"  value={invoiceNumber} />
+                                id="inline-full-name" placeholder="eg. #INV-100001"  value={invoiceNumber} readOnly/>
                                 {/* onChange={(e) => setInvoiceNumber(e.target.value)} */}
               </div>
               <div className="mb-2 md:mb-1 md:flex items-center mt-4">
                 <label className="w-32 text-gray-800 block font-bold text-sm uppercase tracking-wide">Invoice Date</label>
-                    <DatePicker selected={invoiceDate} onChange={(e) => setInvoiceDate(e)}  dateFormat='dd/MM/yyyy' className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-48 py-2 px-4 text-gray-700 block  bg-gray-100 rounded-lg p-2 mt-1"/> 
+                    <DatePicker selected={invoiceDate} onChange={(e) => setInvoiceDate( )}  dateFormat='dd/MM/yyyy' className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-48 py-2 px-4 text-gray-700 block  bg-gray-100 rounded-lg p-2 mt-1"/> 
               </div>
               <div className="mb-2 md:mb-1 md:flex items-center mt-4">
                 <label className="w-32 text-gray-800 block font-bold text-sm uppercase tracking-wide">Due Date</label>
-                <DatePicker selected={invoiceDueDate} onChange={(e) => setInvoiceDueDate(e)}  dateFormat='dd/MM/yyyy' className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-48 py-2 px-4 text-gray-700 block  bg-gray-100 rounded-lg p-2 mt-1"/>
+                <DatePicker selected={invoiceDueDate} onChange={(date) => handleDateChange(date, setInvoiceDueDate)}
+               dateFormat='dd/MM/yyyy' className="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-48 py-2 px-4 text-gray-700 block  bg-gray-100 rounded-lg p-2 mt-1"/>
               </div>
             </div>
             </div>
@@ -207,7 +240,7 @@ const Invoice = () => {
               <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
                         id="inline-full-name" type="text" placeholder="Billing company address"
-                        x-model="billing.address" name='address' value={companyValues.address}
+                        x-model="billing.address" name='addresscmp' value={companyValues.addresscmp}
                         onChange={handleInputChangeComp}/>
                          <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
@@ -216,12 +249,12 @@ const Invoice = () => {
                         onChange={handleInputChangeComp}/>
                     <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                        id="inline-full-name" type="email" placeholder="Additional info" x-model="billing.extra" name='email' value={companyValues.email}
+                        id="inline-full-name" type="email" placeholder="Additional info" x-model="billing.extra" name='emailcmp' value={companyValues.emailcmp}
                         onChange={handleInputChangeComp}/>
                          <input
                         class="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
                         id="inline-full-name" type="number" placeholder="Billing company address"
-                        x-model="billing.address" name='phoneNo' value={companyValues.phoneNo}
+                        x-model="billing.address" name='phoneNo' value={companyValues.phone_nocmp}
                         onChange={handleInputChangeComp}/>
                         </div>
               <div className="w-full md:w-1/3">
@@ -231,8 +264,8 @@ const Invoice = () => {
                 <i className="bi bi-person-add mr-1"></i>existing</button>
                 <ClientShow  ref={modalRef}/>
                 </div>
-                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 rounded-lg p-2 mt-1" value={formValues.name}
-        onChange={handleInputChange} name='name' id="inline-full-name" placeholder="Name" x-model="from.name"/>
+                <input type="text" className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500 rounded-lg p-2 mt-1" value={formValues.client_name}
+        onChange={handleInputChange} name='client_name' id="inline-full-name" placeholder="Name" x-model="from.name"/>
                 <input
                         className="mb-1 bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
                         id="inline-full-name" name='address' type="text" placeholder="Shipping Address" x-model="from.address" value={formValues.address}
@@ -311,7 +344,7 @@ const Invoice = () => {
               </div>
                 <div>
                     <div class="flex-1 px-1">
-            <Table/>  
+            <Table itemsfunc={itemsfunc } totalfunc={totalfunc}/>  
             </div>
             </div>
           </div>
@@ -322,7 +355,7 @@ const Invoice = () => {
 
           {/* Action buttons */}
           <div className="flex justify-between">
-            <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Save Invoice</button>
+            <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600" onClick={handleSubmit}>Save Invoice</button>
             <button className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600">Cancel</button>
           </div>
   

@@ -44,6 +44,10 @@ const InvoiceSchema = new Schema({
             amount:{
                 type:Number,
                 required:true
+            },
+            image:{
+                type:String,
+                // required:true
             }
         }
     ],
@@ -61,6 +65,10 @@ const InvoiceSchema = new Schema({
     },
     image:{
         type:String,
+        required:true
+    },
+    total:{
+        type:Number,
         required:true
     }
 })
